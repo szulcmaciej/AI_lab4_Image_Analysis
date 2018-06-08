@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 
 
-def get_filtered_keypoints_and_descriptions(img1, img2):
+def get_keypoint_pairs(img1, img2):
 
     sift = cv.xfeatures2d.SIFT_create()
     kp1, des1 = sift.detectAndCompute(img1, None)
@@ -61,6 +61,6 @@ if __name__ == '__main__':
     img1 = cv.imread(file1)
     img2 = cv.imread(file2)
 
-    kp_pairs = get_filtered_keypoints_and_descriptions(img1, img2)
+    kp_pairs = get_keypoint_pairs(img1, img2)
     for pair in kp_pairs:
         print(pair)
