@@ -1,8 +1,9 @@
 from PIL import Image
+import matplotlib.pyplot as plt
 
 
 def append_images(images, direction='horizontal',
-                  bg_color=(255,255,255), aligment='center'):
+                  bg_color=(255, 255, 255), aligment='center'):
     """
     Appends images in horizontal/vertical direction.
 
@@ -48,3 +49,21 @@ def append_images(images, direction='horizontal',
             offset += im.size[1]
 
     return new_im
+
+
+def show_pairs_on_images(filename1, filename2, pairs, hex_alpha='33'):
+    img1 = Image.open(filename1)
+    img2 = Image.open(filename2)
+
+    images = [img1, img2]
+    result_image = append_images(images, aligment='top')
+
+    width, height = img1.size
+    x_offset = width
+
+    for pair in pairs:
+        plt.plot([pair[0].pt[0], pair[1].pt[0] + x_offset], [pair[0].pt[1], pair[1].pt[1]], '#FFFF00' + hex_alpha)
+        # plt.plot([pair[0].pt[0], pair[1].pt[0] + x_offset], [pair[0].pt[1], pair[1].pt[1]])
+
+    plt.imshow(result_image)
+    plt.show()

@@ -2,13 +2,6 @@ import cv2 as cv
 import numpy as np
 
 
-file1 = 'images/room1.png'
-file2 = 'images/room2.png'
-
-img1 = cv.imread(file1)
-img2 = cv.imread(file2)
-
-
 def get_filtered_keypoints_and_descriptions(img1, img2):
 
     sift = cv.xfeatures2d.SIFT_create()
@@ -62,6 +55,12 @@ def get_filtered_keypoints_and_descriptions(img1, img2):
 
 
 if __name__ == '__main__':
+    file1 = 'images/room1.png'
+    file2 = 'images/room2.png'
+
+    img1 = cv.imread(file1)
+    img2 = cv.imread(file2)
+
     kp_pairs = get_filtered_keypoints_and_descriptions(img1, img2)
     for pair in kp_pairs:
         print(pair)
