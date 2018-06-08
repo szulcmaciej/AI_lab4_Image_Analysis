@@ -1,10 +1,6 @@
-import cv2 as cv
 from scipy import spatial
 import numpy as np
 import random
-
-from sift_pairs import get_keypoint_pairs
-from utility import show_pairs_on_images
 
 
 class PairFilter:
@@ -46,25 +42,65 @@ class PairFilter:
         return valid_pairs
 
     def get_pairs_for_transform(self, transform_type='affine'):
-        # get 3 pairs
         pairs_for_transform = []
 
-        # totally random
-        pairs_for_transform.append(random.choice(self.kp_pairs))
-        pairs_for_transform.append(random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
-        pairs_for_transform.append(random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
-        if transform_type == 'perspective':
+        pair_number = 0
+        if transform_type == 'affine':
+            pair_number = 3
+        elif transform_type == 'perspective':
+            pair_number = 4
+
+        while len(pairs_for_transform) < pair_number:
             pairs_for_transform.append(
                 random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
 
         return pairs_for_transform
 
-    def filter_with_ransac(self, samples, max_error, transform_type='affine', verbose=False):
+    @staticmethod
+    def check_pair_for_transform(pair_checked, pairs_for_transform, min_r, max_r):
+        for pair in pairs_for_transform:
+            if spatial.distance.euclidean(pair[0].pt, pair_checked[0].pt) < min_r:
+                return False
+            if spatial.distance.euclidean(pair[0].pt, pair_checked[0].pt) > max_r:
+                return False
+            return True
+
+    def get_pairs_for_transform_heuristic(self, min_r, max_r, transform_type='affine'):
+        pairs_for_transform = []
+
+        pair_number = 0
+        if transform_type == 'affine':
+            pair_number = 3
+        elif transform_type == 'perspective':
+            pair_number = 4
+
+        pairs_for_transform.append(random.choice(self.kp_pairs))
+
+        searching_iters = 0
+        while len(pairs_for_transform) < pair_number:
+            searching_iters += 1
+            random_pair = random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform])
+            if self.check_pair_for_transform(random_pair, pairs_for_transform, min_r, max_r):
+                pairs_for_transform.append(random_pair)
+                searching_iters = 0
+
+            if searching_iters > 100:
+                pairs_for_transform.clear()
+                pairs_for_transform.append(random.choice(self.kp_pairs))
+
+
+        return pairs_for_transform
+
+    def filter_with_ransac(self, samples, max_error, transform_type='affine', verbose=False, min_r=0, max_r=0):
         best_model = None
         best_score = 0
+        score_history = []
 
         for i in range(samples):
-            pairs_for_transform = self.get_pairs_for_transform(transform_type)
+            if min_r == 0 and max_r == 0:
+                pairs_for_transform = self.get_pairs_for_transform(transform_type)
+            else:
+                pairs_for_transform = self.get_pairs_for_transform_heuristic(min_r, max_r, transform_type)
 
             model = RansacTransformModel(pairs_for_transform, transform_type)
             score = 0
@@ -77,6 +113,8 @@ class PairFilter:
                 best_score = score
                 best_model = model
 
+            score_history.append(score)
+
             if verbose:
                 print('Iteration ', i, ' - score: ', score)
 
@@ -86,7 +124,7 @@ class PairFilter:
             if error < max_error:
                 verified_pairs.append(pair)
 
-        return verified_pairs
+        return verified_pairs, score_history
 
     def get_pair(self, keypoint, pairs):
         for pair in pairs:
