@@ -23,35 +23,21 @@ def get_keypoint_pairs(img1, img2):
 
     kp_pairs = [(kp1[pair[0]], kp2[pair[1]]) for pair in pairs]
 
-    # print()
-    # print(f'Potential pairs number: {len(potential_pairs)}')
-    # print(f'Pairs number: {len(pairs)}')
+    # removing points with the same coords
+    coord_pairs = [((pair[0].pt, pair[1].pt), pair) for pair in kp_pairs]
 
-    # print(pairs[0])
-    # print(des1[pairs[1][0], :10])
-    # print(des2[pairs[1][1], :10])
+    used_coords = []
+    verified_pairs = []
+    for coords, pair in coord_pairs:
+        if coords not in used_coords:
+            used_coords.append(coords)
+            verified_pairs.append(pair)
 
-    # # draw all keypoints
-    # img1_with_all_keypoints = cv.drawKeypoints(img1, kp1, img1)
-    # cv.imwrite('images/img1_with_all_keypoints.png', img1_with_all_keypoints)
-    # img2_with_all_keypoints = cv.drawKeypoints(img2, kp2, img2)
-    # cv.imwrite('images/img2_with_all_keypoints.png', img2_with_all_keypoints)
-
-    kp1_filtered = [elem for index, elem in enumerate(kp1) if index in map(lambda x: x[0], pairs)]
-    des1_filtered = [elem for index, elem in enumerate(des1) if index in map(lambda x: x[0], pairs)]
-    kp2_filtered = [elem for index, elem in enumerate(kp2) if index in map(lambda x: x[1], pairs)]
-    des2_filtered = [elem for index, elem in enumerate(des2) if index in map(lambda x: x[1], pairs)]
-
-    # # draw filtered keypoints
-    # img1_with_filtered_keypoints = cv.drawKeypoints(img1, kp1_filtered, img1)
-    # cv.imwrite('images/img1_with_filtered_keypoints.png', img1_with_filtered_keypoints)
-    # img2_with_filtered_keypoints = cv.drawKeypoints(img2, kp2_filtered, img2)
-    # cv.imwrite('images/img2_with_filtered_keypoints.png', img2_with_filtered_keypoints)
-
-    # TODO remove duplicates(keypoints with the same coords)
+    print('kp_pairs: ', len(kp_pairs))
+    print('verified pairs (no doubles): ', len(verified_pairs))
 
     # return kp1_filtered, des1_filtered, kp2_filtered, des2_filtered
-    return kp_pairs
+    return verified_pairs
 
 
 if __name__ == '__main__':
@@ -62,5 +48,5 @@ if __name__ == '__main__':
     img2 = cv.imread(file2)
 
     kp_pairs = get_keypoint_pairs(img1, img2)
-    for pair in kp_pairs:
-        print(pair)
+    # for pair in kp_pairs:
+    #     print(pair[0].pt, '    ', pair[1].pt)
