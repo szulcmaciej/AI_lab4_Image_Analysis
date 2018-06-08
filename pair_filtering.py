@@ -45,7 +45,7 @@ class PairFilter:
 
         return valid_pairs
 
-    def get_pairs_for_transform(self, transformType='affine'):
+    def get_pairs_for_transform(self, transform_type='affine'):
         # get 3 pairs
         pairs_for_transform = []
 
@@ -53,20 +53,20 @@ class PairFilter:
         pairs_for_transform.append(random.choice(self.kp_pairs))
         pairs_for_transform.append(random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
         pairs_for_transform.append(random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
-        if transformType == 'perspective':
+        if transform_type == 'perspective':
             pairs_for_transform.append(
                 random.choice([pair for pair in self.kp_pairs if pair not in pairs_for_transform]))
 
         return pairs_for_transform
 
-    def filter_with_ransac(self, samples, max_error, verbose=False):
+    def filter_with_ransac(self, samples, max_error, transform_type='affine', verbose=False):
         best_model = None
         best_score = 0
 
         for i in range(samples):
-            pairs_for_transform = self.get_pairs_for_transform()
+            pairs_for_transform = self.get_pairs_for_transform(transform_type)
 
-            model = RansacTransformModel(pairs_for_transform, 'affine')
+            model = RansacTransformModel(pairs_for_transform, transform_type)
             score = 0
 
             for pair in self.kp_pairs:
@@ -120,11 +120,11 @@ class PairFilter:
 
 
 class RansacTransformModel:
-    def __init__(self, pairs_for_transform, transformType='affine'):
+    def __init__(self, pairs_for_transform, transform_type='affine'):
         self.model = np.zeros(shape=[3, 3])
-        if transformType == 'affine':
+        if transform_type == 'affine':
             self.create_affine_model(pairs_for_transform)
-        if transformType == 'perspective':
+        if transform_type == 'perspective':
             self.create_perspective_model(pairs_for_transform)
 
     def create_affine_model(self, pairs):
@@ -161,7 +161,43 @@ class RansacTransformModel:
         self.model = result_vector.reshape(3, 3)
 
     def create_perspective_model(self, pairs):
-        pass
+        x1 = pairs[0][0].pt[0]
+        x2 = pairs[1][0].pt[0]
+        x3 = pairs[2][0].pt[0]
+        x4 = pairs[3][0].pt[0]
+
+        y1 = pairs[0][0].pt[1]
+        y2 = pairs[1][0].pt[1]
+        y3 = pairs[2][0].pt[1]
+        y4 = pairs[3][0].pt[1]
+
+        u1 = pairs[0][1].pt[0]
+        u2 = pairs[1][1].pt[0]
+        u3 = pairs[2][1].pt[0]
+        u4 = pairs[3][1].pt[0]
+
+        v1 = pairs[0][1].pt[1]
+        v2 = pairs[1][1].pt[1]
+        v3 = pairs[2][1].pt[1]
+        v4 = pairs[3][1].pt[1]
+
+        A = [[x1, y1, 1, 0, 0, 0, -u1*x1, -u1*y1],
+             [x2, y2, 1, 0, 0, 0, -u2*x2, -u2*y2],
+             [x3, y3, 1, 0, 0, 0, -u3*x3, -u3*y3],
+             [x4, y4, 1, 0, 0, 0, -u4*x4, -u4*y4],
+             [0, 0, 0, x1, y1, 1, -v1*x1, -v1*y1],
+             [0, 0, 0, x2, y2, 1, -v2*x2, -v2*y2],
+             [0, 0, 0, x3, y3, 1, -v3*x3, -v3*y3],
+             [0, 0, 0, x4, y4, 1, -v4*x4, -v4*y4]]
+        A = np.array(A)
+
+        B = [u1, u2, u3, u4, v1, v2, v3, v4]
+        B = np.array(B)
+
+        result_vector = np.dot(np.linalg.pinv(A), B)
+        result_vector = np.append(result_vector, [1])
+
+        self.model = result_vector.reshape(3, 3)
 
     def calculate_error(self, pair):
         x = pair[0].pt[0]

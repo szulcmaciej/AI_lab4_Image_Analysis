@@ -19,7 +19,7 @@ if __name__ == '__main__':
     kp_pairs = get_keypoint_pairs(img1, img2)
 
     pairFilter = PairFilter(kp_pairs)
-    valid_pairs = pairFilter.filter_with_ransac(40, 50, verbose=True)
+    valid_pairs = pairFilter.filter_with_ransac(1000, 50, transform_type='perspective',  verbose=True)
 
     print('Total pairs: ', len(kp_pairs))
     print('Valid pairs: ', len(valid_pairs))
