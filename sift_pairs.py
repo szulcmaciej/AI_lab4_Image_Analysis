@@ -8,6 +8,9 @@ def get_keypoint_pairs(img1, img2):
     kp1, des1 = sift.detectAndCompute(img1, None)
     kp2, des2 = sift.detectAndCompute(img2, None)
 
+    # print(des1.shape)
+    # print(des2.shape)
+
     distances = np.zeros((des1.shape[0], des2.shape[0]))
     for i in range(des1.shape[0]):
         for j in range(des2.shape[0]):

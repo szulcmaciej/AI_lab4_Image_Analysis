@@ -1,5 +1,6 @@
 from PIL import Image
 import matplotlib.pyplot as plt
+import os
 
 
 def append_images(images, direction='horizontal',
@@ -51,7 +52,7 @@ def append_images(images, direction='horizontal',
     return new_im
 
 
-def show_pairs_on_images(filename1, filename2, pairs, hex_alpha='33'):
+def show_pairs_on_images(filename1, filename2, pairs, hex_alpha='33', result_filename='', result_title='', result_suptitle='', show=True):
     img1 = Image.open(filename1)
     img2 = Image.open(filename2)
 
@@ -61,9 +62,23 @@ def show_pairs_on_images(filename1, filename2, pairs, hex_alpha='33'):
     width, height = img1.size
     x_offset = width
 
+    plt.clf()
+
     for pair in pairs:
         plt.plot([pair[0].pt[0], pair[1].pt[0] + x_offset], [pair[0].pt[1], pair[1].pt[1]], '#FFFF00' + hex_alpha)
         # plt.plot([pair[0].pt[0], pair[1].pt[0] + x_offset], [pair[0].pt[1], pair[1].pt[1]])
 
     plt.imshow(result_image)
-    plt.show()
+    if result_title is not '':
+        plt.title(result_title)
+    if result_suptitle is not '':
+        plt.suptitle(result_suptitle)
+    plt.axis('off')
+
+    if result_filename is not '':
+        result_path = os.path.join('..', 'result_images', f"{result_filename}.png")
+        plt.subplots_adjust(top=0.95)
+        plt.savefig(result_path, bbox_inches='tight')
+
+    if show:
+        plt.show()

@@ -93,7 +93,7 @@ class PairFilter:
 
     def filter_with_ransac(self, samples, max_error, transform_type='affine', verbose=False, min_r=0, max_r=0):
         best_model = None
-        best_score = 0
+        best_score = -1
         score_history = []
 
         for i in range(samples):
