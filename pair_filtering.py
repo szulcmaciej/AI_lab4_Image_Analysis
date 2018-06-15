@@ -61,7 +61,7 @@ class PairFilter:
         for pair in pairs_for_transform:
             if spatial.distance.euclidean(pair[0].pt, pair_checked[0].pt) < min_r:
                 return False
-            if spatial.distance.euclidean(pair[0].pt, pair_checked[0].pt) > max_r:
+            if 0 < max_r < spatial.distance.euclidean(pair[0].pt, pair_checked[0].pt):
                 return False
             return True
 

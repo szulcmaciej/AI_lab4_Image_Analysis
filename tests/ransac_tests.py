@@ -102,7 +102,7 @@ def run_test_bulk(name, samples_list, max_error_list, transform_type_list, heuri
                     result_filename = f"R_{transform_type_short}_{name}_s{samples}_e{max_error}_m{min_r}_M{max_r}"
                     result_suptitle = f"Ransac {transform_type} - {name}\n" \
                                       f"samples: {samples}  max_error: {max_error}  min_r: {min_r}  max_r: {max_r}"
-                    result_title = f"total pairs: {len(kp_pairs)}  valid pairs: {len(valid_pairs)}"
+                    result_title = f"total pairs: {len(kp_pairs)}  valid pairs: {len(valid_pairs)}  avg score: {np.average(score_history)}"
 
                     show_pairs_on_images(file1, file2, valid_pairs, result_filename=result_filename,
                                          result_title=result_title, result_suptitle=result_suptitle, show=False)
